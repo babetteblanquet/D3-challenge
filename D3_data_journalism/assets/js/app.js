@@ -3,17 +3,16 @@
 // automatically resizes the chart
 // function makeResponsive() {
 
-// if the SVG area isn't empty when the browser loads,
-// remove it and replace it with a resized version of the chart
-var svgArea = d3.select("#scatter").select("svg");
+// // if the SVG area isn't empty when the browser loads,
+// // remove it and replace it with a resized version of the chart
+// var svgArea = d3.select("#scatter").select("svg");
 
-// clear svg is not empty
-if (!svgArea.empty()) {
-    svgArea.remove();
-}
+// // clear svg is not empty
+// if (!svgArea.empty()) {
+//     svgArea.remove();
+// }
 
-// SVG wrapper dimensions are determined by the current width and
-// height of the browser window.
+
 var svgWidth = 960;
 var svgHeight = 500;
 
@@ -29,7 +28,7 @@ var width = svgWidth - margin.left - margin.right;
 
 // Append SVG element
 var svg = d3
-    .select(".chart")
+    .select("#scatter")
     .append("svg")
     .attr("height", svgHeight)
     .attr("width", svgWidth);
@@ -38,87 +37,91 @@ var svg = d3
 var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    // Read CSV
-    d3.csv("data.csv").then(function (data) {
+// Read CSV
+d3.csv("data.csv").then(function (data) {
 
-        // parse data
-        data.forEach(function (data) {
-            data.age = +data.age;
-            data.smokes = +data.smokes;
-        });
+    // Step 1: Parse Data/Cast as numbers
+    // ==============================
+    data.forEach(function (data) {
+        data.age = +data.age;
+        data.smokes = +data.smokes;
     });
-        // create scales
-        var xLinearScale = d3.scaleLinear()
-          .domain(d3.extent(data, d => d.age))
-          .range([0, width]);
 
-        var yLinearScale = d3.scaleLinear()
-          .domain([0, d3.max(sata, d => d.smokes)])
-          .range([height, 0]);
+    // Step 2: Create scale functions
+    // ==============================
+    var xLinearScale = d3.scaleLinear()
+        .domain([30, d3.max(data, d => d.age)])
+        .range([0, width]);
 
-        // create axes
-        var xAxis = d3.axisBottom(xLinearScale);
-        var yAxis = d3.axisLeft(yLinearScale);
+    var yLinearScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.smokes)])
+        .range([height, 0]);
 
-        // append axes
-        chartGroup.append("g")
-          .attr("transform", `translate(0, ${height})`)
-          .call(xAxis);
+    // Step 3: Create axis functions
+    // ==============================
+    var xAxis = d3.axisBottom(xLinearScale);
+    var yAxis = d3.axisLeft(yLinearScale);
 
-        chartGroup.append("g")
-          .call(yAxis);
+    // Step 4: Append Axes to the chart
+    // ==============================
+    chartGroup.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(xAxis);
 
-        // line generator
-        var line = d3.line()
-          .x(d => xTimeScale(d.date))
-          .y(d => yLinearScale(d.medals));
+    chartGroup.append("g")
+        .call(yAxis);
 
-        // append line
-        chartGroup.append("path")
-          .data([medalData])
-          .attr("d", line)
-          .attr("fill", "none")
-          .attr("stroke", "red");
+    // Step 5: Create Circles
+    // ==============================
+    var circlesGroup = chartGroup.selectAll("circle")
+        .data(hairData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => xLinearScale(d.hair_length))
+        .attr("cy", d => yLinearScale(d.num_hits))
+        .attr("r", "15")
+        .attr("fill", "pink")
+        .attr("opacity", ".5");
 
-        // append circles
-        var circlesGroup = chartGroup.selectAll("circle")
-          .data(medalData)
-          .enter()
-          .append("circle")
-          .attr("cx", d => xTimeScale(d.date))
-          .attr("cy", d => yLinearScale(d.medals))
-          .attr("r", "10")
-          .attr("fill", "gold")
-          .attr("stroke-width", "1")
-          .attr("stroke", "black");
+    // Step 6: Initialize tool tip
+    // ==============================
+    var toolTip = d3.tip()
+        .attr("class", "tooltip")
+        .offset([80, -60])
+        .html(function (d) {
+            return (`${d.rockband}<br>Hair length: ${d.hair_length}<br>Hits: ${d.num_hits}`);
+        });
 
-        // Date formatter to display dates nicely
-        var dateFormatter = d3.timeFormat("%d-%b");
+    // Step 7: Create tooltip in the chart
+    // ==============================
+    chartGroup.call(toolTip);
 
-        // Step 1: Initialize Tooltip
-        var toolTip = d3.tip()
-          .attr("class", "tooltip")
-          .offset([80, -60])
-          .html(function(d) {
-            return (`<strong>${dateFormatter(d.date)}<strong><hr>${d.medals}
-            medal(s) won`);
-          });
+    // Step 8: Create event listeners to display and hide the tooltip
+    // ==============================
+    circlesGroup.on("click", function (data) {
+        toolTip.show(data, this);
+    })
+        // onmouseout event
+        .on("mouseout", function (data, index) {
+            toolTip.hide(data);
+        });
 
-        // Step 2: Create the tooltip in chartGroup.
-        chartGroup.call(toolTip);
+    // Create axes labels
+    chartGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left + 40)
+        .attr("x", 0 - (height / 2))
+        .attr("dy", "1em")
+        .attr("class", "axisText")
+        .text("Number of Billboard 100 Hits");
 
-        // Step 3: Create "mouseover" event listener to display tooltip
-        circlesGroup.on("mouseover", function(d) {
-          toolTip.show(d, this);
-        })
-        // Step 4: Create "mouseout" event listener to hide tooltip
-          .on("mouseout", function(d) {
-            toolTip.hide(d);
-          });
-      }).catch(function(error) {
-        console.log(error);
-      });
-}
+    chartGroup.append("text")
+        .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
+        .attr("class", "axisText")
+        .text("Hair Metal Band Hair Length (inches)");
+}).catch(function (error) {
+    console.log(error);
+});
 
 // // When the browser loads, makeResponsive() is called.
 // // makeResponsive();
