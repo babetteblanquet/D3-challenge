@@ -12,7 +12,7 @@
 //     svgArea.remove();
 // }
 
-var svgWidth = 960;
+var svgWidth = 1200;
 var svgHeight = 500;
 
 var margin = {
@@ -44,21 +44,22 @@ d3.csv("data.csv").then(function(data) {
     data.forEach(function (data) {
         data.age = +data.age;
         data.smokes = +data.smokes;
+        data.abbr = data.abbr;
     });
 
     // Step 2: Create scale functions
     // ==============================
     var xLinearScale = d3.scaleLinear()
-        .domain([30, d3.max(data, d => d.age)])
+        .domain([30.3, d3.max(data, d => d.age)])
         .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
-        .domain([8, d3.max(data, d => d.smokes)])
+        .domain([9, d3.max(data, d => d.smokes)])
         .range([height, 0]);
 
     // Step 3: Create axis functions
     // ==============================
-    var xAxis = d3.axisBottom(xLinearScale);
+    var xAxis = d3.axisBottom(xLinearScale).ticks(14);
     var yAxis = d3.axisLeft(yLinearScale);
 
     // Step 4: Append Axes to the chart
@@ -81,6 +82,35 @@ d3.csv("data.csv").then(function(data) {
         .attr("r", "10")
         .attr("fill", "blue")
         .attr("opacity", ".5");
+        
+    //Append text into circles
+    var textElems = chartGroup.selectAll("text")
+        .data(data)
+        .enter()
+        .append("text")
+        .text(data => data.abbr)
+        .attr("x", d => xLinearScale(d.age))
+        .attr("y", d => yLinearScale(d.smokes))
+        .attr('font-size',10)//font size
+        .attr('dx', -8)//positions text towards the left of the center of the circle
+        .attr('dy',4)
+        .style('fill', 'black');
+
+        // const nodeElems = svg.append('g')
+        // .selectAll('circle')
+        // .data(nodes)
+        // .enter().append('circle')
+        // .attr('r',radius)
+        // .attr('fill', getNodeColor)
+        
+        // const textElems = svg.append('g')
+        // .selectAll('text')
+        // .data(nodes)
+        // .enter().append('text')
+        // .text(node => node.label)
+        // .attr('font-size',8)//font size
+        // .attr('dx', -10)//positions text towards the left of the center of the circle
+        // .attr('dy',4)
 
     // // Step 6: Initialize tool tip
     // // ==============================
@@ -109,7 +139,7 @@ d3.csv("data.csv").then(function(data) {
     //  ==============================
     chartGroup.append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left + 10)
+        .attr("y", 0 - margin.left)
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .attr("class", "axisText")
@@ -118,7 +148,7 @@ d3.csv("data.csv").then(function(data) {
     chartGroup.append("text")
         .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
         .attr("class", "axisText")
-        .text("Age population (average)");
+        .text("Age (average)");
   }).catch(function (error) {
     console.log(error);
 });
