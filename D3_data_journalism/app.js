@@ -113,12 +113,12 @@ d3.csv("data.csv").then(function (USdata) {
         .attr("y", 0 - margin.left)
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
-        .attr("class", "axisText")
+        .attr("class", "aText")
         .text("Smokers (%)");
 
     chartGroup.append("text")
         .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
-        .attr("class", "axisText")
+        .attr("class", "aText")
         .text("Age (average)");
 }).catch(function (error) {
     console.log(error);
