@@ -37,7 +37,7 @@ var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 // Read CSV
-d3.csv("data.csv").then(function(data) {
+d3.csv("data.csv").then(function (data) {
 
     // Step 1: Parse Data/Cast as numbers
     // ==============================
@@ -82,35 +82,19 @@ d3.csv("data.csv").then(function(data) {
         .attr("r", "10")
         .attr("fill", "blue")
         .attr("opacity", ".5");
-        
+
     //Append text into circles
     var textElems = chartGroup.selectAll("text")
         .data(data)
         .enter()
         .append("text")
-        .text(data => data.abbr)
+        .text(d => d.abbr)
         .attr("x", d => xLinearScale(d.age))
         .attr("y", d => yLinearScale(d.smokes))
-        .attr('font-size',10)//font size
-        .attr('dx', -8)//positions text towards the left of the center of the circle
-        .attr('dy',4)
+        .attr('font-size', 10)//font size
+        .attr('dx', -7)//positions text towards the left of the center of the circle
+        .attr('dy', 4)
         .style('fill', 'black');
-
-        // const nodeElems = svg.append('g')
-        // .selectAll('circle')
-        // .data(nodes)
-        // .enter().append('circle')
-        // .attr('r',radius)
-        // .attr('fill', getNodeColor)
-        
-        // const textElems = svg.append('g')
-        // .selectAll('text')
-        // .data(nodes)
-        // .enter().append('text')
-        // .text(node => node.label)
-        // .attr('font-size',8)//font size
-        // .attr('dx', -10)//positions text towards the left of the center of the circle
-        // .attr('dy',4)
 
     // // Step 6: Initialize tool tip
     // // ==============================
@@ -149,7 +133,7 @@ d3.csv("data.csv").then(function(data) {
         .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
         .attr("class", "axisText")
         .text("Age (average)");
-  }).catch(function (error) {
+}).catch(function (error) {
     console.log(error);
 });
 
