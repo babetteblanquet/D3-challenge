@@ -1,17 +1,3 @@
-// @TODO: YOUR CODE HERE!
-// The code for the chart is wrapped inside a function that
-// automatically resizes the chart
-// function makeResponsive() {
-
-// // if the SVG area isn't empty when the browser loads,
-// // remove it and replace it with a resized version of the chart
-// var svgArea = d3.select("#scatter").select("svg");
-
-// // clear svg is not empty
-// if (!svgArea.empty()) {
-//     svgArea.remove();
-// }
-
 var svgWidth = 1200;
 var svgHeight = 500;
 
@@ -37,24 +23,23 @@ var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 // Read CSV
-d3.csv("data.csv").then(function (data) {
+d3.csv("data.csv").then(function (USdata) {
 
     // Step 1: Parse Data/Cast as numbers
     // ==============================
-    data.forEach(function (data) {
+    USdata.forEach(function (data) {
         data.age = +data.age;
         data.smokes = +data.smokes;
-        data.abbr = data.abbr;
     });
 
     // Step 2: Create scale functions
     // ==============================
     var xLinearScale = d3.scaleLinear()
-        .domain([30.3, d3.max(data, d => d.age)])
+        .domain([30.3, d3.max(USdata, d => d.age)])
         .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
-        .domain([9, d3.max(data, d => d.smokes)])
+        .domain([9, d3.max(USdata, d => d.smokes)])
         .range([height, 0]);
 
     // Step 3: Create axis functions
@@ -74,18 +59,19 @@ d3.csv("data.csv").then(function (data) {
     // Step 5: Create Circles
     // ==============================
     var circlesGroup = chartGroup.selectAll("circle")
-        .data(data)
+        .data(USdata)
         .enter()
         .append("circle")
         .attr("cx", d => xLinearScale(d.age))
         .attr("cy", d => yLinearScale(d.smokes))
         .attr("r", "10")
-        .attr("fill", "blue")
-        .attr("opacity", ".5");
+        .attr("class", "stateCircle");
+        //.attr("fill", "blue")
+        //.attr("opacity", ".5");
 
     //Append text into circles
-    var textElems = chartGroup.selectAll("text")
-        .data(data)
+    chartGroup.selectAll("text")
+        .data(USdata)
         .enter()
         .append("text")
         .text(d => d.abbr)
@@ -96,28 +82,29 @@ d3.csv("data.csv").then(function (data) {
         .attr('dy', 4)
         .style('fill', 'black');
 
-    // // Step 6: Initialize tool tip
-    // // ==============================
-    // var toolTip = d3.tip()
-    //     .attr("class", "tooltip")
-    //     .offset([80, -60])
-    //     .html(function (d) {
-    //         return (`${d.rockband}<br>Hair length: ${d.hair_length}<br>Hits: ${d.num_hits}`);
-    //     });
+    // Step 6: Initialize tool tip
+    // ==============================
+    var toolTip = d3.tip()
+        .attr("class", "d3-tip")
+        .offset([-8, 0])
+        .html(function (d) {
+            return (`${d.abbr}<br>% Smokers: ${d.smokes}%<br>Age average: ${d.age}`);
+        });
 
-    // // Step 7: Create tooltip in the chart
-    // // ==============================
-    // chartGroup.call(toolTip);
+    // Step 7: Create tooltip in the chart
+    // ==============================
+    chartGroup.call(toolTip);
 
-    // // Step 8: Create event listeners to display and hide the tooltip
-    // // ==============================
-    // circlesGroup.on("click", function (data) {
-    //     toolTip.show(data, this);
-    // })
-    //     // onmouseout event
-    //     .on("mouseout", function (data, index) {
-    //         toolTip.hide(data);
-    //     });
+    // Step 8: Create event listeners to display and hide the tooltip
+    // ==============================
+    circlesGroup.on("mouseover", function (data) {
+        toolTip.show(data, this);
+    })
+        // onmouseout event
+        .on("mouseout", function (data, index) {
+            toolTip.hide(data);
+        });
+
 
     // Step 9: Create axes labels
     //  ==============================
@@ -136,9 +123,3 @@ d3.csv("data.csv").then(function (data) {
 }).catch(function (error) {
     console.log(error);
 });
-
-// // When the browser loads, makeResponsive() is called.
-// // makeResponsive();
-
-// // // When the browser window is resized, makeResponsive() is called.
-// // d3.select(window).on("resize", makeResponsive);
