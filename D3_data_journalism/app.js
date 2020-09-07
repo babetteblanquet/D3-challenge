@@ -30,7 +30,9 @@ d3.csv("data.csv").then(function (USdata) {
     USdata.forEach(function (data) {
         data.age = +data.age;
         data.smokes = +data.smokes;
+        data.abbr = data.abbr;
     });
+
 
     // Step 2: Create scale functions
     // ==============================
@@ -66,11 +68,10 @@ d3.csv("data.csv").then(function (USdata) {
         .attr("cy", d => yLinearScale(d.smokes))
         .attr("r", "10")
         .attr("class", "stateCircle");
-        //.attr("fill", "blue")
-        //.attr("opacity", ".5");
-
+   
     //Append text into circles
-    chartGroup.selectAll("text")
+    chartGroup.append("g")
+        .selectAll("text")
         .data(USdata)
         .enter()
         .append("text")
@@ -86,9 +87,9 @@ d3.csv("data.csv").then(function (USdata) {
     // ==============================
     var toolTip = d3.tip()
         .attr("class", "d3-tip")
-        .offset([-8, 0])
+        .offset([0, -4])
         .html(function (d) {
-            return (`${d.abbr}<br>% Smokers: ${d.smokes}%<br>Age average: ${d.age}`);
+            return (`${d.state}<br>Smokers: ${d.smokes}%<br>Age average: ${d.age}`);
         });
 
     // Step 7: Create tooltip in the chart
@@ -104,7 +105,6 @@ d3.csv("data.csv").then(function (USdata) {
         .on("mouseout", function (data, index) {
             toolTip.hide(data);
         });
-
 
     // Step 9: Create axes labels
     //  ==============================
